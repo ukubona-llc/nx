@@ -263,6 +263,49 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+        
+        .decision-toggle {
+            display: inline-block;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin: 0.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .decision-toggle:hover {
+            background: rgba(0, 255, 136, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .decision-toggle.active {
+            background: rgba(0, 255, 136, 0.5);
+            border-color: #ff6b6b;
+            box-shadow: 0 0 10px #ff6b6b;
+        }
+        
+        .outcome-metrics {
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            text-shadow: 0 0 5px #00ff88;
+        }
+        
+        .time-fractal {
+            width: 100%;
+            height: 100px;
+            position: relative;
+            margin: 1rem 0;
+        }
+        
+        .time-fractal-element {
+            position: absolute;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body>
@@ -380,16 +423,55 @@ Archetypal Mapping
             </div>
         </div>
         
+        <!-- Decision Simulator -->
+        <div class="card">
+            <h3>⏳ Decision Simulator</h3>
+            <div class="avatar-showcase">
+                <div class="avatar-chip" onclick="selectAvatar('Hamlet')">🎭 Hamlet<br><small>Deliberative</small></div>
+                <div class="avatar-chip" onclick="selectAvatar('Fortinbras')">🗡️ Fortinbras<br><small>Decisive</small></div>
+                <div class="avatar-chip" onclick="selectAvatar('Hamlebras')">⚔️ Hamlebras<br><small>Balanced</small></div>
+            </div>
+            <div style="margin: 1rem 0;">
+                <strong>Decision:</strong>
+                <select id="decisionInput">
+                    <option value="cooperate">Cooperate</option>
+                    <option value="defect">Defect</option>
+                    <option value="innovate">Innovate</option>
+                </select>
+            </div>
+            <div style="margin: 1rem 0;">
+                <strong>Time Horizon:</strong><br>
+                <span class="decision-toggle" onclick="simulateOutcome('1d')">1d</span>
+                <span class="decision-toggle" onclick="simulateOutcome('1w')">1w</span>
+                <span class="decision-toggle" onclick="simulateOutcome('1m')">1m</span>
+                <span class="decision-toggle" onclick="simulateOutcome('1y')">1y</span>
+                <span class="decision-toggle" onclick="simulateOutcome('10y')">10y</span>
+                <span class="decision-toggle" onclick="simulateOutcome('100y')">100y</span>
+            </div>
+            <div class="time-fractal" id="timeFractal">
+                <div class="time-fractal-element" style="width: 60px; height: 60px; top: 20px; left: 20px;"></div>
+                <div class="time-fractal-element" style="width: 40px; height: 40px; top: 30px; right: 30px; animation-delay: -2s;"></div>
+            </div>
+            <div class="outcome-metrics" id="outcomeMetrics">
+                <div>Trust Score: --</div>
+                <div>Cost Impact: --</div>
+                <div>Social Impact: --</div>
+            </div>
+            <div class="banter-stream" id="decisionBanter">
+                <div class="banter-line system-log">System: Awaiting decision...</div>
+            </div>
+        </div>
+        
         <!-- Live FITDZ Log -->
         <div class="card">
             <h3>📝 FITDZ-001-UX.log</h3>
             <div class="code-preview" id="fitdzLog">
-[2025-07-28T15:42:13] Dopamine recursion trigger: ACTIVE
-[2025-07-28T15:42:14] Theater of agency: MANIFESTING
-[2025-07-28T15:42:15] Avatar channeling: HAMLET->FORTINBRAS
-[2025-07-28T15:42:16] Narrative emergence: DETECTED
-[2025-07-28T15:42:17] User engagement: RECURSIVE_LOOP
-[2025-07-28T15:42:18] Meta-layer consciousness: AWAKENING
+[2025-07-28T13:38:00] Dopamine recursion trigger: ACTIVE
+[2025-07-28T13:38:01] Theater of agency: MANIFESTING
+[2025-07-28T13:38:02] Avatar channeling: HAMLET->FORTINBRAS
+[2025-07-28T13:38:03] Narrative emergence: DETECTED
+[2025-07-28T13:38:04] User engagement: RECURSIVE_LOOP
+[2025-07-28T13:38:05] Meta-layer consciousness: AWAKENING
             </div>
         </div>
     </div>
@@ -505,6 +587,123 @@ Archetypal Mapping
             stream.appendChild(div);
             stream.scrollTop = stream.scrollHeight;
         }
+        
+        // Decision Simulator Logic
+        let currentAvatar = 'Hamlet';
+        let currentTimeHorizon = '1d';
+        
+        function selectAvatar(avatar) {
+            currentAvatar = avatar;
+            const stream = document.getElementById('decisionBanter');
+            const div = document.createElement('div');
+            div.className = 'banter-line system-log';
+            div.textContent = `System: Avatar set to ${avatar}`;
+            stream.appendChild(div);
+            stream.scrollTop = stream.scrollHeight;
+        }
+        
+        function simulateOutcome(timeHorizon) {
+            currentTimeHorizon = timeHorizon;
+            const decision = document.getElementById('decisionInput').value;
+            const toggles = document.querySelectorAll('.decision-toggle');
+            toggles.forEach(t => t.classList.remove('active'));
+            document.querySelector(`.decision-toggle[onclick="simulateOutcome('${timeHorizon}')"]`).classList.add('active');
+            
+            // Mock outcome calculation (replace with Flask API call)
+            const outcomes = {
+                cooperate: { trust: 0.8, cost: 0.3, impact: 0.6 },
+                defect: { trust: 0.2, cost: 0.7, impact: 0.4 },
+                innovate: { trust: 0.5, cost: 0.9, impact: 0.8 }
+            };
+            const avatarWeights = {
+                Hamlet: { cooperate: 0.7, defect: 0.2, innovate: 0.1 },
+                Fortinbras: { cooperate: 0.3, defect: 0.6, innovate: 0.1 },
+                Hamlebras: { cooperate: 0.5, defect: 0.3, innovate: 0.2 }
+            };
+            const timeMultipliers = { '1d': 1, '1w': 2, '1m': 5, '1y': 10, '10y': 50, '100y': 100 };
+            const base = outcomes[decision];
+            const weight = avatarWeights[currentAvatar][decision];
+            const multiplier = timeMultipliers[timeHorizon];
+            const metrics = {
+                trust: (base.trust * weight * multiplier).toFixed(2),
+                cost: (base.cost * multiplier).toFixed(2),
+                impact: (base.impact * weight * multiplier).toFixed(2)
+            };
+            
+            // Update metrics
+            document.getElementById('outcomeMetrics').innerHTML = `
+                <div>Trust Score: ${metrics.trust}</div>
+                <div>Cost Impact: ${metrics.cost}</div>
+                <div>Social Impact: ${metrics.impact}</div>
+            `;
+            
+            // Update fractal animation based on time horizon
+            const fractal = document.getElementById('timeFractal');
+            fractal.innerHTML = `
+                <div class="time-fractal-element" style="width: ${60 + multiplier/5}px; height: ${60 + multiplier/5}px; top: 20px; left: 20px;"></div>
+                <div class="time-fractal-element" style="width: ${40 + multiplier/10}px; height: ${40 + multiplier/10}px; top: 30px; right: 30px; animation-delay: -2s;"></div>
+                <div class="time-fractal-element" style="width: ${20 + multiplier/20}px; height: ${20 + multiplier/20}px; bottom: 20px; left: 50%; animation-delay: -4s;"></div>
+            `;
+            
+            // Add banter
+            const banter = {
+                Hamlet: {
+                    cooperate: "To trust, or not to trust—that is the question.",
+                    defect: "My thoughts be bloody, or be nothing worth!",
+                    innovate: "What a piece of work is man, to dare the new."
+                },
+                Fortinbras: {
+                    cooperate: "We march as one, for strength in unity.",
+                    defect: "Seize the throne, let none stand in our way!",
+                    innovate: "Forge the future, break the old chains."
+                },
+                Hamlebras: {
+                    cooperate: "We weave trust with steel, a paradox of peace.",
+                    defect: "Swift betrayal, yet I ponder its cost.",
+                    innovate: "A bold leap, tempered by recursive thought."
+                }
+            };
+            const stream = document.getElementById('decisionBanter');
+            const div = document.createElement('div');
+            div.className = 'banter-line';
+            div.innerHTML = `<span class="avatar-name">${currentAvatar}:</span> ${banter[currentAvatar][decision]}`;
+            stream.appendChild(div);
+            stream.scrollTop = stream.scrollHeight;
+            
+            if (stream.children.length > 5) {
+                stream.removeChild(stream.firstChild);
+            }
+            
+            // Placeholder for Flask API call
+            /*
+            fetch('/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    node_path: 'Gaia/trunk/firms/media_empire.yaml',
+                    avatar: currentAvatar,
+                    decision: decision,
+                    time_horizon: timeHorizon
+                })
+            })
+            .then(response => response.json())
+            .then(metrics => {
+                document.getElementById('outcomeMetrics').innerHTML = `
+                    <div>Trust Score: ${metrics.trust}</div>
+                    <div>Cost Impact: ${metrics.cost}</div>
+                    <div>Social Impact: ${metrics.impact}</div>
+                `;
+                const div = document.createElement('div');
+                div.className = 'banter-line';
+                div.innerHTML = `<span class="avatar-name">${currentAvatar}:</span> ${metrics.banter}`;
+                stream.appendChild(div);
+                stream.scrollTop = stream.scrollHeight;
+            });
+            */
+        }
+        
+        // Initialize default toggle
+        document.querySelector('.decision-toggle[onclick="simulateOutcome(\'1d\')]").classList.add('active');
         
         // Start intervals
         setInterval(updateMetrics, 3000);
